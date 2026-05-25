@@ -1,0 +1,6 @@
+{
+  "name": "BBPS Compliance & Operator Portal",
+  "description": "An interactive operations, compliance tracking, and data security monitoring portal for Bharat Bill Payment System (BBPS) in alignment with Bank of Baroda RFP specifications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
