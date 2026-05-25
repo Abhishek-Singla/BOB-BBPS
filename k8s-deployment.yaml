@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bob-bbps
+  labels:
+    app.kubernetes.io/part-of: bob-bbps-portal
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bob-bbps-portal-deployment
+  namespace: bob-bbps
+  labels:
+    app: bob-bbps-portal
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bob-bbps-portal
+  template:
+    metadata:
+      labels:
+        app: bob-bbps-portal
+    spec:
+      containers:
+      - name: web-portal
+        image: gcr.io/bob-bbps-production/bbps-qa-portal:latest
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bob-bbps-portal-service
+  namespace: bob-bbps
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: bob-bbps-portal
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bob-bbps-portal-ingress
+  namespace: bob-bbps
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: bbps-portal.bankofbaroda.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bob-bbps-portal-service
+            port:
+              number: 80
